@@ -8,14 +8,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 
-current_os = platform.system()
+from .setting import root
 
-if current_os == "Windows":
-    # 在Windows中设置环境变量
-    os.environ['MY_VARIABLE'] = 'C:\\Users\\chromedriver.exe'
-elif current_os == "Linux":
-    # 在linux中设置环境变量
-    os.environ['MY_VARIABLE'] = '/root/chromedriver.exe'
+
+# 设置环境变量
+os.environ['CHROME_DRIVER'] = os.path.join(root, 'chromedriver.exe')
 
 
 class DriverClass(Enum):

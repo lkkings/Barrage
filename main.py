@@ -6,7 +6,7 @@ async def callback(message: str):
 
 
 if __name__ == '__main__':
-    url = "https://live.douyin.com/100844728303"
+    url = "https://live.douyin.com/450072839585"
     barrage = BarrageBuilder().douyin()\
         .page(url)\
         .port(8080)\
@@ -15,5 +15,4 @@ if __name__ == '__main__':
 
     barrage.daemon = True
     barrage.start()
-    barrage.send("弹慕连接成功")
     barrage.join()

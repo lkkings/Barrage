@@ -17,6 +17,7 @@ class Barrage(threading.Thread):
         self.page: str | None = None
         self.host = "127.0.0.1"
         self.port = 8080
+        self.is_login = False
         self.isWss = False
         self.driver: Driver | None = None
         # 收到弹慕的异步回调函数
@@ -33,13 +34,11 @@ class Barrage(threading.Thread):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         self.driver.open(self.page)
-        print('请先扫码登入')
-        self.driver.wait(self.element.login_success_css)
-        print("登入成功")
         self.event.set()
         wsurl = f"ws://{self.host}:{self.port}"
         if self.isWss:
             wsurl = f"wss://{self.host}/{self.port}"
+        self.driver.wait(self.element.sign_css)
         self.driver.inject(self.script, *Setting(wsurl).to_args())
         print(f"服务启动{wsurl}")
         loop.run_until_complete(self._start_websocket_server())
@@ -48,7 +47,8 @@ class Barrage(threading.Thread):
 
     async def _start_websocket_server(self):
         # 启动WebSocket服务器
-        await websockets.serve(self.__handler, self.host, self.port).wait_closed()
+        await websockets.serve(self.__handler, self.host, self.port)
+
 
     async def __handler(self, websocket, path):
         # 这个函数将处理WebSocket连接
@@ -58,6 +58,11 @@ class Barrage(threading.Thread):
 
     def send(self, text):
         self.event.wait()
+        if not self.is_login:
+            print('请先扫码登入')
+            self.driver.wait(self.element.login_success_css)
+            print("登入成功")
+            self.is_login = True
         self.driver.write(self.element.barrage_input_css, text)
         self.driver.click(self.element.send_btn_css)
 
@@ -93,6 +98,7 @@ class Element(ABC):
         self.barrage_input_css = ""
         self.send_btn_css = ""
         self.login_success_css = ""
+        self.sign_css = ""
 
 
 class DYElement(Element):
@@ -101,6 +107,7 @@ class DYElement(Element):
         self.barrage_input_css = ".webcast-chatroom___textarea"
         self.send_btn_css = ".webcast-chatroom___send-btn"
         self.login_success_css = "header a.B3AsdZT9>div.avatar-component-avatar-container>img.PbpHcHqa"
+        self.sign_css = ".webcast-chatroom___bottom-message"
 
 
 class BarrageBuilder(Builder, ABC):
@@ -109,6 +116,7 @@ class BarrageBuilder(Builder, ABC):
 
     def douyin(self):
         self.barrage.element = DYElement()
+        self.barrage.script = os.path.join(root, "script/douyin.js")
         return self
 
     def host(self, host: str):
