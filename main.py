@@ -5,7 +5,7 @@ import websockets
 from barrage import BarrageBuilder
 
 live_uri = ""
-ws_uri = ""
+ws_uri = "ws://20.55.80.86:8080/live"
 
 
 async def connect_to_websocket_server():
@@ -26,4 +26,5 @@ async def connect_to_websocket_server():
 
 
 if __name__ == '__main__':
+    live_uri = input("请输入你的直播间地址：")
     asyncio.get_event_loop().run_until_complete(connect_to_websocket_server())
